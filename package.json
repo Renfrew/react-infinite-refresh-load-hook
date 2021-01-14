@@ -1,0 +1,24 @@
+{
+  "name": "react-infinite-refresh-load-hook",
+  "version": "1.0.0",
+  "description": "An Infinite Scroll Hook in react that supports refresh and load more.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react",
+    "react-hooks",
+    "infinite-scroll",
+    "react-component",
+    "infinite",
+    "scroll",
+    "refresh"
+  ],
+  "author": "RenfrewChen",
+  "license": "MIT",
+  "dependencies": {},
+  "peerDependencies": {
+    "react": ">=16.0.0"
+  }
+}
