@@ -2,6 +2,7 @@ import 'react-app-polyfill/ie11';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import styled from 'styled-components';
+import useInfiniteScroll from '../src';
 
 interface Item {
   key: number;
@@ -24,55 +25,37 @@ const ListItem = styled.li`
 `;
 
 const App = () => {
-  const boxRef = React.createRef<HTMLUListElement>();
   const anchorRef = React.createRef<HTMLLIElement>();
-  const [observer, setObserver] = React.useState<IntersectionObserver>();
   const [data, setData] = React.useState<Item[]>([]);
 
-  React.useEffect(() => {
-    let newArray: Item[] = [];
-    for (let i = 0; i < 50; i++) {
-      const newItem = {
+  const dataLength = React.useRef(0);
+
+  const handleLoadMore = React.useCallback(() => {
+    const newArray: Item[] = [];
+    for (let i = 0; i < dataLength.current + 50; i++) {
+      newArray.push({
         key: i,
         value: `This is item ${i}`,
-      };
-      newArray = [...newArray, newItem];
-    }
-    setData(newArray);
-
-    const options = {
-      root: boxRef.current,
-      rootMargin: '0px',
-      threshold: 1,
-    };
-
-    const observer = new IntersectionObserver(handleIntersect, options);
-    setObserver(observer);
-
-    function handleIntersect(entries) {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio === 1) {
-          // eslint-disable-next-line no-console
-          console.warn('HERE');
-          window.alert(entry.target.id);
-        }
       });
     }
+    dataLength.current += 50;
+    setData(newArray);
   }, []);
 
-  React.useEffect(() => {
-    anchorRef.current && observer?.observe(anchorRef.current);
+  const infiniteRef = useInfiniteScroll<HTMLUListElement>({
+    onLoadMore: handleLoadMore,
+    onLoadAnchor: anchorRef,
+  });
 
-    return () => {
-      anchorRef.current && observer?.unobserve(anchorRef.current);
-    };
-  }, [anchorRef]);
+  React.useEffect(() => {
+    handleLoadMore();
+  }, [handleLoadMore]);
 
   return (
     <React.Fragment>
       <h1>Infinite List</h1>
       <h3>Created by using “react-infinite-refresh-load-hook”</h3>
-      <Scrollable ref={boxRef} id="box">
+      <Scrollable ref={infiniteRef} id="box">
         {data.map((item, idx) => {
           if (idx === data.length - 2) {
             return (
