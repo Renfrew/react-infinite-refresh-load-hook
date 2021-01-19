@@ -1,7 +1,8 @@
-import { RefObject, useEffect, useRef, useState } from 'react';
+/* eslint-disable no-console */
+import { useEffect, useRef, useState, useCallback, RefObject } from 'react';
 
 export type InfiniteRoot = Element | undefined | null;
-export type InfiniteAnchor = RefObject<Element> | undefined | null;
+export type InfiniteAnchor = Element | undefined | null;
 
 type Observer = IntersectionObserver | undefined;
 
@@ -14,9 +15,6 @@ interface InfiniteLoadMore extends InfiniteRootArg {
   // The callback function to execute when the threshold is exceeded.
   onLoadMore?: Function;
 
-  // The target element to calculate the threshold.
-  onLoadAnchor?: InfiniteAnchor;
-
   // from 0 to 1. 1 means the anchor is 100% visable and 0.25 means 25% visable.
   onLoadThreshold?: number;
 }
@@ -25,107 +23,157 @@ interface InfiniteRefresh extends InfiniteRootArg {
   // The callback function to execute when the threshold is exceeded.
   onRefresh?: Function;
 
-  // The target element to calculate the threshold.
-  onRefreshAnchor?: InfiniteAnchor;
-
   // from 0 to 1. 1 means the anchor is 100% visable and 0.25 means 25% visable.
   onRefreshThreshold?: number;
 }
 
 export type InfiniteScrollArgs = InfiniteLoadMore & InfiniteRefresh;
 
-function useInfiniteScroll<T extends Element>({
+function useInfiniteScroll<
+  T extends Element,
+  S extends Element,
+  R extends Element
+>({
   container,
   onLoadMore,
-  onLoadAnchor,
   onLoadThreshold = 1,
   onRefresh,
-  onRefreshAnchor,
   onRefreshThreshold = 1,
-}: InfiniteScrollArgs) {
-  const ref = useRef<T>(null);
+}: InfiniteScrollArgs): [
+  RefObject<T>,
+  (instance: S | null) => void,
+  (instance: R | null) => void
+] {
+  // The scrollable conponent and the observed targers
+  const containerRef = useRef<T>(null);
+  const onLoadAnchorRef = useRef<InfiniteAnchor>(null);
+  const onRefreshAnchorRef = useRef<InfiniteAnchor>(null);
+
   const [loadObserver, setLoadObserver] = useState<Observer>(undefined);
   const [refreshObserver, setRefreshObserver] = useState<Observer>(undefined);
 
+  // Flags that are used to skip the initialize run
+  const isFirstOnLoad = useRef(true);
+  const isFirstOnRefresh = useRef(true);
+
+  // The method which is used to setup the onLoad target
+  const onLoadAnchor = useCallback(
+    (element: S | null) => {
+      if (onLoadAnchorRef.current) {
+        loadObserver?.unobserve(onLoadAnchorRef.current);
+      }
+
+      if (element && loadObserver) {
+        isFirstOnLoad.current = true;
+        loadObserver.observe(element);
+      }
+
+      onLoadAnchorRef.current = element;
+    },
+    [loadObserver]
+  );
+
+  // The method which is used to setup the refresh target
+  const onRefreshAchor = useCallback(
+    (element: R | null) => {
+      if (onRefreshAnchorRef.current) {
+        refreshObserver?.unobserve(onRefreshAnchorRef.current);
+      }
+
+      if (element && refreshObserver) {
+        isFirstOnRefresh.current = true;
+        refreshObserver.observe(element);
+      }
+
+      onRefreshAnchorRef.current = element;
+    },
+    [refreshObserver]
+  );
+
+  // Setup onLoadMore observer
   useEffect(() => {
     let observer: IntersectionObserver | undefined;
 
     if (onLoadMore) {
       const options = {
-        root: container || ref.current,
+        root: container || containerRef.current,
         rootMargin: '0px',
         threshold: onLoadThreshold,
       };
 
       observer = new IntersectionObserver(handleOnLoadMore, options);
       setLoadObserver(observer);
+
+      if (onLoadAnchorRef.current) {
+        isFirstOnLoad.current = true;
+        observer.observe(onLoadAnchorRef.current);
+      }
     }
 
     function handleOnLoadMore(entries: IntersectionObserverEntry[]) {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= onLoadThreshold) {
-          onLoadMore?.();
-        }
-      });
+      function notifyAll() {
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            entry.intersectionRatio >= onLoadThreshold
+          ) {
+            onLoadMore?.();
+          }
+        });
+      }
+
+      if (isFirstOnLoad.current) {
+        isFirstOnLoad.current = false;
+      } else {
+        notifyAll();
+      }
     }
 
     return () => observer?.disconnect();
   }, [container, onLoadMore, onLoadThreshold]);
 
+  // Setup onRefrewsh observer
   useEffect(() => {
     let observer: IntersectionObserver | undefined;
 
     if (onRefresh) {
       const options = {
-        root: container || ref.current,
+        root: container || containerRef.current,
         rootMargin: '0px',
         threshold: onRefreshThreshold,
       };
 
       observer = new IntersectionObserver(handleOnRefresh, options);
       setRefreshObserver(observer);
+
+      if (onRefreshAnchorRef.current) {
+        isFirstOnRefresh.current = true;
+        observer.observe(onRefreshAnchorRef.current);
+      }
     }
 
     function handleOnRefresh(entries: IntersectionObserverEntry[]) {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= onRefreshThreshold) {
-          onRefresh?.();
-        }
-      });
+      function notifyAll() {
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            entry.intersectionRatio >= onRefreshThreshold
+          ) {
+            onRefresh?.();
+          }
+        });
+      }
+
+      if (isFirstOnRefresh.current) {
+        isFirstOnRefresh.current = false;
+      } else {
+        notifyAll();
+      }
     }
     return () => observer?.disconnect();
   }, [container, onRefresh, onRefreshThreshold]);
 
-  // Update onLoadMore observers
-  useEffect(() => {
-    let cleanupElement: Element | null;
-    if (onLoadAnchor && onLoadAnchor.current) {
-      loadObserver?.observe(onLoadAnchor.current);
-      cleanupElement = onLoadAnchor.current;
-    }
-
-    return () => {
-      if (cleanupElement) {
-        loadObserver?.unobserve(cleanupElement);
-      }
-    };
-  }, [loadObserver, onLoadAnchor]);
-
-  useEffect(() => {
-    let cleanupElement: Element | null;
-    if (onRefreshAnchor && onRefreshAnchor.current) {
-      refreshObserver?.observe(onRefreshAnchor.current);
-      cleanupElement = onRefreshAnchor.current;
-    }
-
-    return () => {
-      if (cleanupElement) {
-        refreshObserver?.unobserve(cleanupElement);
-      }
-    };
-  }, [refreshObserver, onRefreshAnchor]);
-
-  return ref;
+  return [containerRef, onLoadAnchor, onRefreshAchor];
 }
 
 export default useInfiniteScroll;

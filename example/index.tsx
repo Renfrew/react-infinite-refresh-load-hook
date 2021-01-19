@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import 'react-app-polyfill/ie11';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -25,8 +26,8 @@ const ListItem = styled.li`
 `;
 
 const App = () => {
-  const anchorRef = React.createRef<HTMLLIElement>();
   const [data, setData] = React.useState<Item[]>([]);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
 
   const dataLength = React.useRef(0);
 
@@ -42,9 +43,22 @@ const App = () => {
     setData(newArray);
   }, []);
 
-  const infiniteRef = useInfiniteScroll<HTMLUListElement>({
+  const handleRefresh = React.useCallback(() => {
+    if (!isRefreshing) {
+      setIsRefreshing(true);
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 3000);
+    }
+  }, [isRefreshing]);
+
+  const [infiniteRef, onLoadAnchorRef, onRefreshAnchorRef] = useInfiniteScroll<
+    HTMLUListElement,
+    HTMLLIElement,
+    HTMLLIElement
+  >({
     onLoadMore: handleLoadMore,
-    onLoadAnchor: anchorRef,
+    onRefresh: handleRefresh,
   });
 
   React.useEffect(() => {
@@ -56,10 +70,26 @@ const App = () => {
       <h1>Infinite List</h1>
       <h3>Created by using “react-infinite-refresh-load-hook”</h3>
       <Scrollable ref={infiniteRef} id="box">
+        {isRefreshing && <div>Refreshing</div>}
         {data.map((item, idx) => {
+          if (idx === 0) {
+            return (
+              <ListItem
+                key={item.key}
+                ref={onRefreshAnchorRef}
+                id={`item${item.key}`}
+              >
+                {item.value}
+              </ListItem>
+            );
+          }
           if (idx === data.length - 2) {
             return (
-              <ListItem key={item.key} ref={anchorRef} id={`item${item.key}`}>
+              <ListItem
+                key={item.key}
+                ref={onLoadAnchorRef}
+                id={`item${item.key}`}
+              >
                 {item.value}
               </ListItem>
             );
