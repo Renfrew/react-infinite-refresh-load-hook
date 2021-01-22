@@ -14,7 +14,7 @@ the handler of that anchor will be called.
 
   or
 
-  yarn add https://github.com/Renfrew/react-infinite-refresh-load-hook.git
+  yarn add react-infinite-refresh-load-hook@Renfrew/react-infinite-refresh-load-hook#main
 
   // in code ES6
   import useInfiniteScroll from 'react-infinite-refresh-load-hook'
