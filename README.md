@@ -3,26 +3,26 @@
 A react hook that allow you to inifinite scrolling.
 it support both loadmore and refresh in either direction.
 
-`useInfiniteScroll` hook uses Intersection Observer API to visability of the
+`useInfiniteScroll` hook uses [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API#Threholds) to monitor the visability of the
 anchor elements. As long as a anchor element is visable on the container,
 the handler of that anchor will be called.
 
-## install
+## Install
 
 ```bash
-  npm install git+https://github.com/Renfrew/react-infinite-refresh-load-hook.git
+  npm i react-infinite-refresh-load-hook
 
   or
 
-  yarn add react-infinite-refresh-load-hook@Renfrew/react-infinite-refresh-load-hook#main
+  yarn add react-infinite-refresh-load-hook
 
-  // in code ES6
+  // ES6
   import useInfiniteScroll from 'react-infinite-refresh-load-hook'
   // or commonjs
   var useInfiniteScroll = require('react-infinite-refresh-load-hook');
 ```
 
-## using
+## Using
 
 ```jsx
 const App = () => {
@@ -34,11 +34,7 @@ const App = () => {
     ...
   }, []);
 
-  const [infiniteRef, onLoadAnchorRef, onRefreshAnchorRef] = useInfiniteScroll<
-    HTMLUListElement,
-    HTMLLIElement,
-    HTMLLIElement
-  >({
+  const [infiniteRef, onLoadAnchorRef, onRefreshAnchorRef] = useInfiniteScroll({
     onLoadMore: handleLoadMore,
     onRefresh: handleRefresh,
   });
