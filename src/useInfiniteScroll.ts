@@ -6,12 +6,7 @@ export type InfiniteAnchor = Element | undefined | null;
 
 type Observer = IntersectionObserver | undefined;
 
-interface InfiniteRootArg {
-  // The container that is scrollable, default to window
-  container?: InfiniteRoot;
-}
-
-interface InfiniteLoadMore extends InfiniteRootArg {
+interface InfiniteLoadMore {
   // The callback function to execute when the threshold is exceeded.
   onLoadMore?: Function;
 
@@ -19,7 +14,7 @@ interface InfiniteLoadMore extends InfiniteRootArg {
   onLoadThreshold?: number;
 }
 
-interface InfiniteRefresh extends InfiniteRootArg {
+interface InfiniteRefresh {
   // The callback function to execute when the threshold is exceeded.
   onRefresh?: Function;
 
@@ -34,7 +29,6 @@ function useInfiniteScroll<
   S extends Element,
   R extends Element
 >({
-  container,
   onLoadMore,
   onLoadThreshold = 1,
   onRefresh,
@@ -96,7 +90,7 @@ function useInfiniteScroll<
 
     if (onLoadMore) {
       const options = {
-        root: container || containerRef.current,
+        root: containerRef.current,
         rootMargin: '0px',
         threshold: onLoadThreshold,
       };
@@ -130,7 +124,7 @@ function useInfiniteScroll<
     }
 
     return () => observer?.disconnect();
-  }, [container, onLoadMore, onLoadThreshold]);
+  }, [onLoadMore, onLoadThreshold]);
 
   // Setup onRefrewsh observer
   useEffect(() => {
@@ -138,7 +132,7 @@ function useInfiniteScroll<
 
     if (onRefresh) {
       const options = {
-        root: container || containerRef.current,
+        root: containerRef.current,
         rootMargin: '0px',
         threshold: onRefreshThreshold,
       };
@@ -171,7 +165,7 @@ function useInfiniteScroll<
       }
     }
     return () => observer?.disconnect();
-  }, [container, onRefresh, onRefreshThreshold]);
+  }, [onRefresh, onRefreshThreshold]);
 
   return [containerRef, onLoadAnchor, onRefreshAchor];
 }
