@@ -34,9 +34,9 @@ function useInfiniteScroll<
   onRefresh,
   onRefreshThreshold = 1,
 }: InfiniteScrollArgs): [
-  (instance: T | null) => void,
-  (instance: S | null) => void,
-  (instance: R | null) => void
+  (instance: T | null | undefined) => void,
+  (instance: S | null | undefined) => void,
+  (instance: R | null | undefined) => void
 ] {
   // The scrollable conponent and the observed targers
   const [containerRef, setContainerRef] = useState<InfiniteRoot>(null);
@@ -52,13 +52,13 @@ function useInfiniteScroll<
   const isFirstOnRefresh = useRef(true);
 
   // The method which is used to setup the container
-  const containerAnchor = useCallback((element: T | null) => {
+  const containerAnchor = useCallback((element: T | null | undefined) => {
     setContainerRef(element);
   }, []);
 
   // The method which is used to setup the onLoad target
   const onLoadAnchor = useCallback(
-    (element: S | null) => {
+    (element: S | null | undefined) => {
       if (onLoadAnchorRef.current) {
         loadObserver?.unobserve(onLoadAnchorRef.current);
       }
@@ -75,7 +75,7 @@ function useInfiniteScroll<
 
   // The method which is used to setup the refresh target
   const onRefreshAchor = useCallback(
-    (element: R | null) => {
+    (element: R | null | undefined) => {
       if (onRefreshAnchorRef.current) {
         refreshObserver?.unobserve(onRefreshAnchorRef.current);
       }
