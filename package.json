@@ -38,7 +38,7 @@
   "bugs": {
     "url": "https://github.com/Renfrew/react-infinite-refresh-load-hook/issues"
   },
-  "homepage": "https://github.com/Renfrew/react-infinite-refresh-load-hook/issues#readme",
+  "homepage": "https://github.com/Renfrew/react-infinite-refresh-load-hook/#readme",
   "dependencies": {},
   "peerDependencies": {
     "react": ">=16.0.0"
