@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { useEffect, useRef, useState, useCallback, RefObject } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 export type InfiniteRoot = Element | undefined | null;
 export type InfiniteAnchor = Element | undefined | null;
@@ -34,12 +34,13 @@ function useInfiniteScroll<
   onRefresh,
   onRefreshThreshold = 1,
 }: InfiniteScrollArgs): [
-  RefObject<T>,
+  (instance: T | null) => void,
   (instance: S | null) => void,
   (instance: R | null) => void
 ] {
   // The scrollable conponent and the observed targers
-  const containerRef = useRef<T>(null);
+  const [containerRef, setContainerRef] = useState<InfiniteRoot>(null);
+  // const containerRef = useRef<T>(null);
   const onLoadAnchorRef = useRef<InfiniteAnchor>(null);
   const onRefreshAnchorRef = useRef<InfiniteAnchor>(null);
 
@@ -49,6 +50,11 @@ function useInfiniteScroll<
   // Flags that are used to skip the initialize run
   const isFirstOnLoad = useRef(true);
   const isFirstOnRefresh = useRef(true);
+
+  // The method which is used to setup the container
+  const containerAnchor = useCallback((element: T | null) => {
+    setContainerRef(element);
+  }, []);
 
   // The method which is used to setup the onLoad target
   const onLoadAnchor = useCallback(
@@ -90,7 +96,7 @@ function useInfiniteScroll<
 
     if (onLoadMore) {
       const options = {
-        root: containerRef.current,
+        root: containerRef,
         rootMargin: '0px',
         threshold: onLoadThreshold,
       };
@@ -124,7 +130,7 @@ function useInfiniteScroll<
     }
 
     return () => observer?.disconnect();
-  }, [onLoadMore, onLoadThreshold]);
+  }, [containerRef, onLoadMore, onLoadThreshold]);
 
   // Setup onRefrewsh observer
   useEffect(() => {
@@ -132,7 +138,7 @@ function useInfiniteScroll<
 
     if (onRefresh) {
       const options = {
-        root: containerRef.current,
+        root: containerRef,
         rootMargin: '0px',
         threshold: onRefreshThreshold,
       };
@@ -165,9 +171,9 @@ function useInfiniteScroll<
       }
     }
     return () => observer?.disconnect();
-  }, [onRefresh, onRefreshThreshold]);
+  }, [containerRef, onRefresh, onRefreshThreshold]);
 
-  return [containerRef, onLoadAnchor, onRefreshAchor];
+  return [containerAnchor, onLoadAnchor, onRefreshAchor];
 }
 
 export default useInfiniteScroll;
