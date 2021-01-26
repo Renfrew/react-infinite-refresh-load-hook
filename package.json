@@ -1,6 +1,6 @@
 {
   "name": "react-infinite-refresh-load-hook",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An Infinite Scroll Hook in react that supports refresh and load more.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
