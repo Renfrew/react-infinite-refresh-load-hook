@@ -115,7 +115,6 @@ function TestComponent(props: TestComponentProps) {
           return <ListItem key={idx} id={`${idx}`} />;
         })}
       </ul>
-      <div id="container">{infiniteRef.current ? 'exist' : 'none'}</div>
       <div id="refresh">{isRefreshing ? 'refreshing' : 'no-refreshing'}</div>
       <div id="load">loading</div>
       <div id="length">{data.length}</div>
@@ -129,13 +128,6 @@ describe('create the hook without crashing', () => {
   it('no argument', () => {
     const { result } = renderHook(() => useInfiniteScroll({}));
     expect(result.current.length).toBe(3);
-  });
-
-  it('set container', () => {
-    const { container } = render(<TestComponent testContainer />);
-
-    const containerDiv = container.querySelector('#container');
-    expect(containerDiv?.innerHTML).toBe('exist');
   });
 
   it('set onLoad', () => {
@@ -161,10 +153,6 @@ describe('test functionalities', () => {
     const dataLengthDiv = container.querySelector('#length');
     expect(dataLengthDiv?.innerHTML).toBe('50');
 
-    // container should be null
-    const containerDiv = container.querySelector('#container');
-    expect(containerDiv?.innerHTML).toBe('none');
-
     const onLoadCallDiv = container.querySelector('#onLoadCall');
     expect(onLoadCallDiv?.innerHTML).toBe('0');
 
@@ -181,10 +169,6 @@ describe('test functionalities', () => {
     // Initiallized data length
     const dataLengthDiv = container.querySelector('#length');
     expect(dataLengthDiv?.innerHTML).toBe('50');
-
-    // container should be null
-    const containerDiv = container.querySelector('#container');
-    expect(containerDiv?.innerHTML).toBe('none');
 
     const onRefreshCallDiv = container.querySelector('#onRefreshCall');
     expect(onRefreshCallDiv?.innerHTML).toBe('0');
