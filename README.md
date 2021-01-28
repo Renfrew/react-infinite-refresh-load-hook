@@ -1,4 +1,4 @@
-# react-infinite-refresh-load-hook [![vcxz](https://img.shields.io/npm/dt/react-infinite-scroll-component.svg?style=flat-square)](https://www.npmjs.com/package/react-infinite-scroll-component) [![npm](https://img.shields.io/npm/v/react-infinite-scroll-component.svg?style=flat-square)](https://www.npmjs.com/package/react-infinite-scroll-component)
+# react-infinite-refresh-load-hook
 
 A react hook that allow you to inifinite scrolling.
 it support both loadmore and refresh in either direction.
